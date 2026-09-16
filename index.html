@@ -1252,23 +1252,20 @@
      少し覗いていて、「縦に連続する帯がここで止まっている」と分かる作り(第165弾) */
   .tn-cell{position:relative;aspect-ratio:150/78;border-radius:4px;background:#04120c;
     display:flex;align-items:center;justify-content:center;overflow:hidden}
-  .tn-cell img{width:78%;height:82%;object-fit:contain;display:block}
+  /* 実機のリール絵は**もともと横長に描かれていて**、横長の窓をめいっぱい使う。
+     こちらの素材は正方形なので、そのまま収めると左右が大きく余って小さく見えた。
+     縦を目一杯まで上げ、わずかに横へ引き伸ばして実機の見え方に合わせる(第168弾) */
+  .tn-cell img{width:96%;height:94%;object-fit:contain;display:block;transform:scaleX(1.14)}
   /* 絵柄ごとに大きさを変える。ジョーカーと7は大きく、果物は余白を残して数えやすく */
-  .tn-cell.s-joker img{width:88%;height:92%}
-  .tn-cell.s-red7 img,.tn-cell.s-blue7 img{width:66%;height:92%}
-  .tn-cell.s-bar img{width:92%;height:70%}
-  .tn-cell.s-eight img{width:62%;height:88%}
-  .tn-cell.s-cherry img,.tn-cell.s-orange img,.tn-cell.s-plum img,.tn-cell.s-melon img{width:70%;height:74%}
-  /* 停止中に上下から覗く隣の絵柄 */
-  .tn-peek{position:absolute;left:0;right:0;height:26%;display:flex;align-items:center;
-    justify-content:center;pointer-events:none;opacity:.5}
-  .tn-peek.t{top:0;align-items:flex-end}
-  .tn-peek.b{bottom:0;align-items:flex-start}
-  .tn-peek img{width:54%;height:150%;object-fit:contain}
+  .tn-cell.s-joker img{width:98%;height:99%}
+  .tn-cell.s-red7 img,.tn-cell.s-blue7 img{width:82%;height:99%}
+  .tn-cell.s-bar img{width:99%;height:82%}
+  .tn-cell.s-eight img{width:78%;height:97%}
+  .tn-cell.s-cherry img,.tn-cell.s-orange img,.tn-cell.s-plum img,.tn-cell.s-melon img{width:88%;height:87%}
   /* 回転中の帯。1コマぶんずつ縦に送る(なめらかなブラーは使わない) */
   .tn-strip{position:absolute;left:0;right:0;top:0;will-change:transform}
   .tn-strip div{height:var(--tnh,78px);display:flex;align-items:center;justify-content:center}
-  .tn-strip img{width:72%;height:80%;object-fit:contain}
+  .tn-strip img{width:96%;height:92%;object-fit:contain;transform:scaleX(1.14)}
   .tn-cell.blank{background:#05070f}
   .tn-cell.hit{box-shadow:inset 0 0 0 2px #ffd76a,0 0 14px rgba(255,215,106,.7);z-index:2}
   /* 止まった瞬間のごく短い位置合わせ。パチスロのように長く滑らせない */
@@ -1336,23 +1333,52 @@
     letter-spacing:.1em;cursor:pointer;border:none;color:#241503;
     background:linear-gradient(180deg,#ffe9a8,#d9a53d);box-shadow:0 6px 18px rgba(217,165,61,.45)}
   .tn-spin:disabled{opacity:.45;cursor:default}
-  /* ダブルダウン */
-  .tn-dd{margin-top:9px;padding:9px;border-radius:10px;
-    background:linear-gradient(180deg,rgba(120,20,30,.5),rgba(50,8,14,.6));
-    border:1px solid rgba(255,120,120,.45)}
-  .tn-dd h4{margin:0 0 6px;font-size:12px;font-weight:900;letter-spacing:.14em;color:#ffd0d0;text-align:center}
-  .tn-dd .row{display:flex;gap:6px;justify-content:center;margin-bottom:6px}
-  .tn-pick{flex:1;max-width:92px;aspect-ratio:3/4;border-radius:8px;cursor:pointer;
-    border:1.5px solid rgba(255,255,255,.25);background:#04081c;
-    display:flex;align-items:center;justify-content:center;padding:0}
-  .tn-pick img{width:78%;height:78%;object-fit:contain}
-  .tn-pick.on{border-color:#ffd76a;box-shadow:0 0 12px rgba(255,215,106,.7)}
-  .tn-pick.dealer{border-color:rgba(255,120,120,.7)}
-  .tn-dd .lbl{text-align:center;font-size:9.5px;letter-spacing:.16em;color:#b9c4cf;margin-bottom:3px}
+  /* ダブルダウン(第168弾)。
+     下に別の盤を作らず、**通常のリール画面と同じ場所を入れ替える**。
+     リールは通常時と同じ横長のコマを使うので、正方形に押し込んで余る問題も消える。
+     構図は実機と同じ逆三角形: 上にディーラー1本、下にプレイヤー3本 */
+  /* 実機は黒地。枠の装飾はほとんど無く、文字色だけで情報を分けている。
+     見出しは黄、数値は水色、説明文は黄 —— この3色しか使わない */
+  .tn-ddstage{display:flex;flex-direction:column;gap:4px;padding:6px;border-radius:6px;
+    background:#000;border:2px solid #2a3550}
+  .tn-ddstage .lbl{text-align:center;font-size:9px;letter-spacing:.26em;color:#ffd23f}
+  .tn-ddstage .lbl.p{color:#ffd23f}
+  /* 上の3段。ORIGINAL WIN / COLLECTED / TRY LUCK を実機と同じ並びで出す */
+  .tn-ddhead{display:grid;grid-template-columns:auto 1fr auto;gap:1px 8px;
+    font-size:8px;letter-spacing:.1em;color:#5fe3ff;padding:0 2px;line-height:1.55}
+  .tn-ddhead .n{text-align:right;color:#fff}
+  .tn-ddhead .u{color:#5fe3ff}
+  .tn-ddhead .try{color:#ffd23f}
+  .tn-ddhead .try .n{color:#ffd23f}
+  /* ディーラー枠の右に置くルール文。実機は常時この文言を出したまま */
+  .tn-ddmid{display:flex;align-items:center;gap:6px}
+  .tn-ddrule{flex:1;font-size:7.5px;line-height:1.7;color:#ffd23f;letter-spacing:.04em}
+  /* 左端のスペシャルボーナス表。3つ揃いへの期待はこれが支えている */
+  .tn-ddspec{width:74px;font-size:7px;line-height:1.5;color:#5fe3ff}
+  .tn-ddspec div{display:flex;justify-content:space-between;gap:4px;padding:0 1px}
+  .tn-ddspec div.on{background:#7a1020;color:#fff}
+  .tn-ddspec b{color:#fff;font-weight:400}
+  .tn-ddone{display:flex;justify-content:center}
+  .tn-ddone .tn-cell{width:calc((100% - 12px) / 3)}
+  .tn-ddrow{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+  .tn-cell.dd-dealer{box-shadow:inset 0 0 0 2px rgba(255,120,120,.85)}
+  /* 選べるあいだは3本を対等に見せる。特定の1本を目立たせない */
+  .tn-ddrow.live .tn-cell{cursor:pointer;animation:tnDDWait 1s ease-in-out infinite}
+  @keyframes tnDDWait{0%,100%{box-shadow:inset 0 0 0 1px rgba(150,200,255,.25)}
+    50%{box-shadow:inset 0 0 0 1px rgba(150,200,255,.7)}}
+  .tn-cell.dd-sel{animation:none;box-shadow:inset 0 0 0 3px #ffd76a,0 0 18px rgba(255,215,106,.8);z-index:3}
+  .tn-cell.dd-dim{animation:none;filter:brightness(.72)}
+  .tn-cell.dd-flash{animation:tnDDFlash .16s steps(2) 2}
+  @keyframes tnDDFlash{0%,100%{filter:brightness(1)}50%{filter:brightness(2.1)}}
+  .tn-ddverdict{text-align:center;font-size:13px;font-weight:900;letter-spacing:.2em;min-height:16px}
+  .tn-ddverdict.win{color:#ffe07a;text-shadow:0 0 10px rgba(255,200,60,.8)}
+  .tn-ddverdict.tie{color:#cfe0ee}
+  .tn-ddverdict.lose{color:#8fa2b5}
   .tn-dd .btns{display:flex;gap:6px;margin-top:7px}
   .tn-dd .btns button{flex:1;padding:9px;border-radius:9px;font-size:12px;font-weight:800;cursor:pointer;
     border:1px solid rgba(255,255,255,.3);background:rgba(0,0,0,.3);color:#e8edf2}
   .tn-dd .btns button.go{background:linear-gradient(180deg,#ffe9a8,#d9a53d);color:#241503;border:none}
+  .tn-dd .btns button:disabled{opacity:.4;cursor:default}
   /* リール直下の説明文。倍率も巨大表示せず、1行の説明として淡々と出す */
   .tn-cap{margin-top:6px;text-align:center;font-size:8.5px;color:#fff;letter-spacing:.12em;
     line-height:1.5;text-shadow:1px 1px 0 #05081e;min-height:12px}
@@ -3540,8 +3566,16 @@ var PokerOffline = (() => {
     };
   }
   function bszDouble(stakeX, keepX, rnd2 = Math.random, pick2 = 0) {
+    return bszResolveDouble(bszDealDouble(rnd2), stakeX, keepX, pick2);
+  }
+  function bszDealDouble(rnd2 = Math.random) {
     const dealer = pickSym(rnd2);
     const player = [pickSym(rnd2), pickSym(rnd2), pickSym(rnd2)];
+    const tunnel = player.includes("joker") ? bszPickTunnel(rnd2) : 0;
+    return { dealer, player, tunnel };
+  }
+  function bszResolveDouble(deal, stakeX, keepX, pick2 = 0) {
+    const { dealer, player } = deal;
     const idx = pick2 === 1 || pick2 === 2 ? pick2 : 0;
     const mine = player[idx];
     const result = BSZ_RANK[mine] > BSZ_RANK[dealer] ? "win" : BSZ_RANK[mine] === BSZ_RANK[dealer] ? "tie" : "lose";
@@ -3549,7 +3583,7 @@ var PokerOffline = (() => {
     if (player[0] === player[1] && player[1] === player[2]) specialKey = player[0];
     else if (player.every((s) => s === "red7" || s === "blue7")) specialKey = "any7";
     let specialX = specialKey && BSZ_SPECIAL[specialKey] ? stakeX * BSZ_SPECIAL[specialKey] : 0;
-    const tunnel = player.includes("joker") ? bszPickTunnel(rnd2) : 0;
+    const tunnel = deal.tunnel;
     if (tunnel) specialX *= tunnel;
     const won = result === "win" ? stakeX * 2 : result === "tie" ? stakeX : 0;
     const payX = Math.min(keepX + won + specialX, BSZ_MAX_WIN_X);
@@ -8296,6 +8330,13 @@ var PokerOffline = (() => {
         const pick2 = typeof raw2 === "number" && (raw2 === 0 || raw2 === 1 || raw2 === 2) ? raw2 : 0;
         return { ok: true, msg: { t: "tunnel.double", half, pick: pick2 } };
       }
+      case "tunnel.double.deal":
+        return { ok: true, msg: { t: "tunnel.double.deal", half: m.half === true } };
+      case "tunnel.double.pick": {
+        const raw2 = m.pick;
+        const pick2 = raw2 === 1 || raw2 === 2 ? raw2 : 0;
+        return { ok: true, msg: { t: "tunnel.double.pick", pick: pick2 } };
+      }
       case "tunnel.collect":
         return { ok: true, msg: { t: "tunnel.collect" } };
       case "slot.spin": {
@@ -8802,6 +8843,14 @@ var PokerOffline = (() => {
        * 賭け金と現在額はサーバーだけが握る。切断すれば自動で確定して払う
        */
       __publicField(this, "tunnelHold", /* @__PURE__ */ new Map());
+      /**
+       * 配り終わったが、まだ選ばれていないダブル(第168弾)。
+       *
+       * 実機はディーラーが先に止まり、それを見てから3本の中から選ぶ。
+       * だから4本ぶんを先に決めてここへ置き、ディーラーだけ返す。
+       * プレイヤー3本は選び終わるまで送らない(覗いても分からないようにする)。
+       */
+      __publicField(this, "tunnelDeal", /* @__PURE__ */ new Map());
       __publicField(this, "resumeTokens", /* @__PURE__ */ new Map());
       __publicField(this, "cfg");
       __publicField(this, "bank");
@@ -9149,6 +9198,7 @@ var PokerOffline = (() => {
      * ダブルの途中で切断されても、次の接続や次のスピンで必ずここを通る
      */
     tunnelCashOut(userId) {
+      this.tunnelDeal.delete(userId);
       const hold = this.tunnelHold.get(userId);
       if (!hold) return 0;
       this.tunnelHold.delete(userId);
@@ -9522,6 +9572,7 @@ var PokerOffline = (() => {
           let pending = 0;
           if (o.canDouble) {
             this.tunnelHold.set(s.userId, { bet: r.bet, payX: o.totalPayX });
+            this.tunnelDeal.delete(s.userId);
             pending = Math.round(o.totalPayX * r.bet);
           } else if (r.won > 0) {
             this.economy.collectTunnel(s.userId, r.won);
@@ -9557,7 +9608,43 @@ var PokerOffline = (() => {
           if (r.payX > BSZ_DOUBLE_CAP_X) this.tunnelCashOut(s.userId);
           return;
         }
+        case "tunnel.double.deal": {
+          const hold = this.tunnelHold.get(s.userId);
+          if (!hold) return this.err(sessionId, "ILLEGAL_ACTION", "\u30C0\u30D6\u30EB\u3067\u304D\u308B\u7372\u5F97\u304C\u3042\u308A\u307E\u305B\u3093");
+          if (hold.payX > BSZ_DOUBLE_CAP_X) {
+            this.tunnelCashOut(s.userId);
+            return this.err(sessionId, "ILLEGAL_ACTION", "\u4E0A\u9650\u3092\u8D85\u3048\u305F\u306E\u3067\u78BA\u5B9A\u3057\u307E\u3057\u305F");
+          }
+          const keepX = msg.half ? Math.floor(hold.payX / 2) : 0;
+          const stakeX = hold.payX - keepX;
+          const deal = bszDealDouble(Math.random);
+          this.tunnelDeal.set(s.userId, { deal, stakeX, keepX });
+          this.transport.send(sessionId, {
+            t: "tunnel.double.dealt",
+            dealer: deal.dealer,
+            stakeX,
+            keepX
+          });
+          return;
+        }
+        case "tunnel.double.pick": {
+          const hold = this.tunnelHold.get(s.userId);
+          const pending = this.tunnelDeal.get(s.userId);
+          if (!hold || !pending) return this.err(sessionId, "ILLEGAL_ACTION", "\u9078\u3079\u308B\u30C0\u30D6\u30EB\u304C\u3042\u308A\u307E\u305B\u3093");
+          this.tunnelDeal.delete(s.userId);
+          const r = bszResolveDouble(pending.deal, pending.stakeX, pending.keepX, msg.pick ?? 0);
+          if (r.payX > 0) this.tunnelHold.set(s.userId, { bet: hold.bet, payX: r.payX });
+          else this.tunnelHold.delete(s.userId);
+          const canDouble = r.payX > 0 && r.payX <= BSZ_DOUBLE_CAP_X;
+          this.transport.send(sessionId, {
+            t: "tunnel.double",
+            result: { result: r, pending: Math.round(r.payX * hold.bet), canDouble }
+          });
+          if (r.payX > BSZ_DOUBLE_CAP_X) this.tunnelCashOut(s.userId);
+          return;
+        }
         case "tunnel.collect": {
+          this.tunnelDeal.delete(s.userId);
           const won = this.tunnelCashOut(s.userId);
           this.transport.send(sessionId, { t: "tunnel.collected", won });
           return;
@@ -13868,9 +13955,13 @@ window.__offlineSave = PokerOffline.startOfflineServer();
         tnCredits = balance;
         tnShowResult(msg.result);
         break;
+      case "tunnel.double.dealt":
+        // ディーラーだけ先に届く。ここから3択が始まる(第168弾)
+        tnDDDealt(msg.dealer);
+        break;
       case "tunnel.double":
         tnCredits = balance;
-        tnShowDouble(msg.result);
+        tnDDReveal(msg.result);
         break;
       case "tunnel.collected":
         tnCredits = balance;
@@ -17873,17 +17964,12 @@ window.__offlineSave = PokerOffline.startOfflineServer();
   var tnSpun = false;
 
   /** 覗かせる隣の絵柄。マスごとに固定で散らす(毎回変わるとチラつく) */
-  function tnPeekSym(i, off) {
-    var pool = ["cherry", "orange", "plum", "melon", "bell", "eight", "bar", "blank", "blank"];
-    return pool[(i * 5 + off * 3 + 1) % pool.length];
-  }
   function tnCell(sym, cls, tag, idx) {
     var img = TN_IMG[sym];
-    var pt = TN_IMG[tnPeekSym(idx || 0, 0)], pb = TN_IMG[tnPeekSym(idx || 0, 1)];
+    // 上下から隣の絵柄を覗かせるのはやめた(第168弾)。小さい絵が散らかって
+    // 肝心の停止図柄が読みにくく、実機よりもごちゃついて見えるため
     return '<div class="tn-cell s-' + sym + " " + (cls || "") + (sym === "blank" ? " blank" : "") + '">' +
-      (pt ? '<span class="tn-peek t"><img src="' + pt + '" alt=""></span>' : "") +
       (img ? '<img src="' + img + '" alt="">' : "") +
-      (pb ? '<span class="tn-peek b"><img src="' + pb + '" alt=""></span>' : "") +
       (tag ? '<span class="tn-tag px ' + tag + '">' + (tag === "tunnel" ? "TUNNEL" : "WILD") + "</span>" : "") +
       "</div>";
   }
@@ -17898,29 +17984,66 @@ window.__offlineSave = PokerOffline.startOfflineServer();
   function tnSfxBet() { try { bacAudioInit(); bacBlip(880, 0.05, "square", 0.07); } catch (e) {} }
   /** START音。BETより少し低く、始まりを知らせる */
   function tnSfxStart() { try { bacAudioInit(); bacBlip(420, 0.09, "triangle", 0.10); } catch (e) {} }
-  /** 停止音。短い「トッ」。残響を残さない */
-  function tnSfxStop() { try { bacBlip(240 + Math.random() * 50, 0.045, "square", 0.085); } catch (e) {} }
-  /** 回転ループ音。細かい周期音を小さく鳴らし続ける */
-  function tnLoopOn() {
+  /**
+   * 停止音(第168弾)。実機の録音から、打撃の 88ms だけを切り出したもの。
+   *
+   * 合成音では「コッ」の乾いた質感が出せなかった。150Hz前後の低い胴鳴りに
+   * 730Hz あたりの金属質が重なっていて、これが実機の手触りそのものになる。
+   * 読み込みが間に合わないうちは、これまでどおりの合成音で代用する。
+   */
+  var TN_STOP_B64 = "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";
+  var tnStopBuf = null, tnStopTried = false;
+  function tnStopLoad() {
+    if (tnStopBuf || tnStopTried) return;
     try {
       bacAudioInit();
-      if (!bacAC || tnLoop) return;
-      var o = bacAC.createOscillator(), g = bacAC.createGain(), lfo = bacAC.createOscillator(), lg = bacAC.createGain();
-      o.type = "sawtooth"; o.frequency.value = 1380;
-      lfo.type = "square"; lfo.frequency.value = 26;   // 細かい周期音
-      lg.gain.value = 0.022; g.gain.value = 0.016;
-      lfo.connect(lg).connect(g.gain);
-      o.connect(g).connect(bacAC.destination);
-      o.start(); lfo.start();
-      tnLoop = { o: o, lfo: lfo, g: g };
+      if (!bacAC) return;
+      tnStopTried = true;
+      var bin = atob(TN_STOP_B64), n = bin.length, u8 = new Uint8Array(n);
+      for (var i = 0; i < n; i++) u8[i] = bin.charCodeAt(i);
+      bacAC.decodeAudioData(u8.buffer, function (buf) { tnStopBuf = buf; }, function () {});
     } catch (e) {}
+  }
+  /**
+   * @param vol  0〜1。未選択リールは小さく、選んだリールの停止は大きく鳴らす
+   * @param rate 再生速度。1より下げると低く重い音になる(ディーラーや敗北)
+   */
+  function tnSfxStop(vol, rate) {
+    try {
+      tnStopLoad();
+      if (tnStopBuf && bacAC) {
+        var src = bacAC.createBufferSource(), g = bacAC.createGain();
+        src.buffer = tnStopBuf;
+        if (typeof rate === "number") src.playbackRate.value = rate;
+        g.gain.value = typeof vol === "number" ? vol : 0.85;
+        src.connect(g); g.connect(bacAC.destination);
+        src.start();
+        return;
+      }
+      bacBlip(240 + Math.random() * 50, 0.045, "square", 0.085);
+    } catch (e) {}
+  }
+  /** 回転ループ音。細かい周期音を小さく鳴らし続ける */
+  /**
+   * 回転音(第168弾)。GOLD RUSH と同じ音を、同じ 320ms 間隔で鳴らす。
+   *
+   * これまでは専用の持続音を鳴らしていたが、台ごとに回転音が違うと
+   * 同じ筐体の中の別ゲームに聞こえない。2台で同じ音にして揃えた。
+   * @param ms 間隔。減速に合わせて広げると、速度が落ちたことが耳でも分かる
+   */
+  function tnLoopOn(ms) {
+    var gap = ms || 320;
+    if (tnLoop && tnLoop.gap === gap) return;
+    tnLoopOff();
+    try { play("reelSpin"); } catch (e) {}
+    tnLoop = {
+      gap: gap,
+      t: setInterval(function () { try { play("reelSpin"); } catch (e) {} }, gap),
+    };
   }
   function tnLoopOff() {
     if (!tnLoop) return;
-    try {
-      tnLoop.g.gain.exponentialRampToValueAtTime(0.0008, bacAC.currentTime + 0.08);
-      tnLoop.o.stop(bacAC.currentTime + 0.12); tnLoop.lfo.stop(bacAC.currentTime + 0.12);
-    } catch (e) {}
+    clearInterval(tnLoop.t);
     tnLoop = null;
   }
 
@@ -17943,10 +18066,11 @@ window.__offlineSave = PokerOffline.startOfflineServer();
     var POOL = ["cherry", "orange", "plum", "melon", "bell", "eight", "bar", "red7", "blue7", "joker", "blank"];
     var N = 14;
     var strips = cells.map(function (c, i) {
-      // 帯の最後に「最終的に止まる絵柄」を仕込んでおく
-      var syms = [];
-      for (var k = 0; k < N - 1; k++) syms.push(POOL[(i * 7 + k * 3 + 2) % POOL.length]);
-      syms.push(finalGrid[i]);
+      // 実機のリールは**上から下へ**流れる(第168弾で向きを直した)。
+      // 帯は上ほど後に現れるので、止める絵柄は**先頭**に置く。
+      // 送り量を増やすと transform が 0 に近づき、先頭の絵柄が枠に収まる
+      var syms = [finalGrid[i]];
+      for (var k = 1; k < N; k++) syms.push(POOL[(i * 7 + k * 3 + 2) % POOL.length]);
       c.style.setProperty("--tnh", H + "px");
       c.innerHTML = '<div class="tn-strip">' + syms.map(function (sy) {
         return "<div>" + (TN_IMG[sy] ? '<img src="' + TN_IMG[sy] + '" alt="">' : "") + "</div>";
@@ -17969,7 +18093,7 @@ window.__offlineSave = PokerOffline.startOfflineServer();
         if (t >= stopAt) {
           // 目的の絵柄を枠へ吸着させて固定
           st.stopped = true;
-          st.el.style.transform = "translateY(" + (-(st.n - 1) * H) + "px)";
+          st.el.style.transform = "translateY(0px)";   // 先頭の絵柄が枠に収まる
           var c = cells[i];
           c.classList.remove("landing"); void c.offsetWidth; c.classList.add("landing");
           tnSfxStop();
@@ -17980,7 +18104,8 @@ window.__offlineSave = PokerOffline.startOfflineServer();
         var left = stopAt - t;
         var k = left < 160 ? 0.35 + 0.65 * (left / 160) : 1;
         st.pos = (st.pos + SPEED * 16 * k) % ((st.n - 1) * H);
-        st.el.style.transform = "translateY(" + (-st.pos) + "px)";
+        // pos が増えるほど下へ流れる(0 で先頭=停止図柄が枠に入る)
+        st.el.style.transform = "translateY(" + (st.pos - (st.n - 1) * H) + "px)";
       }
       if (!all || t < FIRST + 8 * GAP) { requestAnimationFrame(loop); return; }
       tnLoopOff();
@@ -17993,6 +18118,10 @@ window.__offlineSave = PokerOffline.startOfflineServer();
   function renderTunnel() {
     var el = document.getElementById("tunnel");
     if (!el) return;
+    // ダブルの演出中は盤を作り直さない(第168弾)。
+    // 残高の更新など別の理由で再描画が走ると、回っているリールのDOMごと
+    // 消えて演出が止まってしまう。書き換えるのは判定の文字だけにする
+    if (tnDD && tnDD.built) { tnDDPaint(); return; }
     var g = tnLast ? tnLast.grid : ["blank","blank","blank","blank","blank","blank","blank","blank","blank"];
     var hit = tnLast ? tnLast.hitCells : [];
     var held = tnLast && tnLast.heldCenter ? [4] : [];
@@ -18023,9 +18152,12 @@ window.__offlineSave = PokerOffline.startOfflineServer();
         '<i style="width:80px;height:80px"></i>' +
         '<b id="tn-mult">' + (tnLast && tnLast.tunnel ? "\u00D7" + tnLast.tunnel : "TUNNEL") + "</b>" +
       "</div>" +
-      '<div class="tn-board">' + rail("l") +
-        '<div class="tn-grid" id="tn-grid" style="flex:1">' + cells + "</div>" +
-        rail("r") + "</div>" +
+      // ダブル中は同じ場所をダブルダウンの盤に入れ替える(第168弾)
+      (tnDD
+        ? '<div class="tn-board">' + tnDDStageHtml() + "</div>"
+        : '<div class="tn-board">' + rail("l") +
+          '<div class="tn-grid" id="tn-grid" style="flex:1">' + cells + "</div>" +
+          rail("r") + "</div>") +
       (tnLast && tnLast.freeBadge ? '<div class="tn-free px">' + tnLast.freeBadge + "</div>" : "") +
       // 説明文 → WINNER! → 情報表示、の順に情報の階層を作る
       '<div class="tn-cap px">' + (tnLast && tnLast.cap ? tnLast.cap : "") + "</div>" +
@@ -18054,25 +18186,67 @@ window.__offlineSave = PokerOffline.startOfflineServer();
     tnWire();
   }
 
-  function tnDoubleHtml() {
-    var d = tnLast && tnLast.dd;
-    return '<div class="tn-dd">' +
-      "<h4>DOUBLE DOWN</h4>" +
-      '<div class="lbl">DEALER</div>' +
-      '<div class="row">' + (d ? '<button class="tn-pick dealer"><img src="' + TN_IMG[d.dealer] + '" alt=""></button>'
-        : '<button class="tn-pick dealer">?</button>') + "</div>" +
-      '<div class="lbl">PLAYER \uFF08\u3081\u304F\u308B\u524D\u306B1\u3064\u9078\u3076\uFF09</div>' +
-      '<div class="row" id="tn-picks">' +
-        [0,1,2].map(function (i) {
-          var sym = d ? d.player[i] : null;
-          return '<button class="tn-pick' + (tnPick === i ? " on" : "") + '" data-p="' + i + '">' +
-            (sym ? '<img src="' + TN_IMG[sym] + '" alt="">' : "?") + "</button>";
-        }).join("") +
+  /**
+   * ダブルダウンの盤(第168弾)。通常のリール画面と同じ場所に出す。
+   *
+   * 構図は実機と同じ逆三角形。ディーラーが上に1本、プレイヤーが下に3本。
+   * リールは通常時と同じ `.tn-cell`(横長)を使う。
+   */
+  function tnDDStageHtml() {
+    var d = tnDD || {};
+    var cell = function (extra, id) {
+      return '<div class="tn-cell s-blank ' + (extra || "") + '"' + (id ? ' id="' + id + '"' : "") + "></div>";
+    };
+    var row3 = function (k, v, cls) {
+      return '<span class="' + (cls || "") + '">' + k + "</span>" +
+        '<span class="n ' + (cls || "") + '">' + tnFmt(v) + "</span>" +
+        '<span class="u ' + (cls || "") + '">COINS</span>';
+    };
+    return '<div class="tn-ddstage" style="flex:1">' +
+      '<div class="tn-ddhead px">' +
+        row3("ORIGINAL WIN", d.origin || 0) +
+        row3("COLLECTED", d.keep || 0) +
+        row3("TRY LUCK", d.tryLuck || 0, "try") +
       "</div>" +
+      '<div class="lbl px">DEALER</div>' +
+      '<div class="tn-ddmid">' +
+        '<div class="tn-ddspec px">' + tnDDSpecHtml() + "</div>" +
+        '<div class="tn-ddone" style="flex:1">' + cell("dd-dealer", "tn-dd-d") + "</div>" +
+        '<div class="tn-ddrule px">If selected reel<br>beats dealer\'s,<br>player wins.<br><br>All ties are<br>replayed.</div>' +
+      "</div>" +
+      '<div class="tn-ddrow' + (d.stage === "picking" ? " live" : "") + '" id="tn-dd-row">' +
+        cell("", "tn-dd-p0") + cell("", "tn-dd-p1") + cell("", "tn-dd-p2") +
+      "</div>" +
+      '<div class="lbl p px">PLAYER</div>' +
+      '<div class="tn-ddverdict px ' + (d.verdictCls || "") + '">' + (d.verdict || "") + "</div>" +
+      "</div>";
+  }
+
+  /**
+   * 3つ揃いのスペシャルボーナス表(サーバーの BSZ_SPECIAL と同じ値)。
+   * 実機は左端に常時出ていて、いま揃っている行が反転する
+   */
+  var TN_SPECIAL = { joker: 800, blue7: 30, red7: 20, any7: 10, bar: 5, eight: 4,
+    bell: 3, melon: 2, plum: 2, orange: 1, cherry: 1 };
+  function tnDDSpecHtml() {
+    var order = ["joker","blue7","red7","any7","bar","eight","bell","melon","plum","orange","cherry"];
+    var stake = (tnDD && tnDD.tryLuck) || 0;
+    var lit = tnDD && tnDD.specKey ? tnDD.specKey : null;
+    return order.map(function (k) {
+      return '<div' + (lit === k ? ' class="on"' : "") + "><span>" + TN_NAME[k] +
+        "</span><b>" + tnFmt(stake * TN_SPECIAL[k]) + "</b></div>";
+    }).join("");
+  }
+
+  /** リールの下に出す操作盤。ダブル中は押せなくする */
+  function tnDoubleHtml() {
+    var busy = !!tnDD;
+    var dis = busy ? " disabled" : "";
+    return '<div class="tn-dd">' +
       '<div class="btns">' +
-        '<button id="tn-collect">\u78BA\u5B9A</button>' +
-        '<button id="tn-half">\u30CF\u30FC\u30D5</button>' +
-        '<button class="go" id="tn-full">\u30C0\u30D6\u30EB</button>' +
+        '<button id="tn-collect"' + dis + ">\u78BA\u5B9A</button>" +
+        '<button id="tn-half"' + dis + ">\u30CF\u30FC\u30D5</button>" +
+        '<button class="go" id="tn-full"' + dis + ">\u30C0\u30D6\u30EB</button>" +
       "</div></div>";
   }
 
@@ -18096,16 +18270,20 @@ window.__offlineSave = PokerOffline.startOfflineServer();
       tnSfxStart();
       send({ t: "tunnel.spin", bet: tnBet });
     };
-    var picks = $$("tn-picks");
-    if (picks) picks.onclick = function (e) {
-      var b = e.target.closest(".tn-pick[data-p]");
-      if (!b) return;
-      tnPick = Number(b.dataset.p); renderTunnel();
-    };
     var c = $$("tn-collect"), h = $$("tn-half"), f = $$("tn-full");
-    if (c) c.onclick = function () { tnBusy = true; send({ t: "tunnel.collect" }); };
-    if (h) h.onclick = function () { tnBusy = true; send({ t: "tunnel.double", half: true, pick: tnPick }); };
-    if (f) f.onclick = function () { tnBusy = true; send({ t: "tunnel.double", half: false, pick: tnPick }); };
+    if (c) c.onclick = function () { if (tnDD) return; tnBusy = true; send({ t: "tunnel.collect" }); };
+    // ハーフもダブルも、同じ手順(ディーラー→3本回転→3択)を通る
+    if (h) h.onclick = function () { tnDDBegin(true); };
+    if (f) f.onclick = function () { tnDDBegin(false); };
+    var row = $$("tn-dd-row");
+    if (row) row.onclick = function (e) {
+      if (!tnDD || tnDD.stage !== "picking") return;
+      var cell = e.target.closest(".tn-cell");
+      if (!cell) return;
+      var idx = Array.prototype.indexOf.call(row.children, cell);
+      if (idx < 0) return;
+      tnDDChoose(idx);
+    };
   }
 
   /**
@@ -18220,6 +18398,308 @@ window.__offlineSave = PokerOffline.startOfflineServer();
       });
       if (pr && typeof pr.then === "function") pr.then(go, go); else go();
     } catch (e) { go(); }
+  }
+
+  // ---------------------------------------------------------------------
+  // ダブルダウン(第168弾)
+  // ---------------------------------------------------------------------
+  //
+  // 実機の手順をそのまま追う:
+  //   ディーラーが先に止まる → 倒すべき相手を理解する間を置く
+  //   → プレイヤー3本が回り出す → どれか1本を選ぶ
+  //   → 選ばなかった2本を先に止める(遠い方から)
+  //   → 選んだ1本だけを4段階で減速させ、最後の1コマをゆっくり送る
+  //
+  // 面白さの本体は「選んだ瞬間」ではなく、**最後の1本に勝敗と3つ揃いの期待が
+  // 同時に乗っている時間**にある。だから未選択2本は消さず、先に見せる。
+  //
+  // 勝敗はサーバーが配った時点で決まっている(bsz.ts の bszDealDouble)。
+  // ここは見せ方だけで、演出中に抽選し直すことはない。
+
+  /** ダブルの強弱。サーバーの BSZ_RANK と同じ並び */
+  var TN_RANK = {
+    blank: 0, cherry: 1, orange: 2, plum: 3, melon: 4,
+    bell: 5, eight: 6, bar: 7, red7: 8, blue7: 9, joker: 10,
+  };
+  var TN_POOL = ["cherry","orange","plum","melon","bell","eight","bar","red7","blue7","joker","blank"];
+
+  /** 進行中のダブル。null なら通常のリール画面 */
+  var tnDD = null;
+
+  /**
+   * 1本ぶんのリール。上から下へ流れ、止めるときだけ多段階で減速する。
+   *
+   * 帯の**先頭**が停止図柄。1周ぶん送ると先頭が枠に収まるので、
+   * 「あと何周して止まるか」だけを決めれば停止位置は自動的に合う。
+   * 先頭と末尾を同じ絵柄にしてあるので、周回のつなぎ目は見えない。
+   */
+  function tnDDReel(cell, seed) {
+    var H = cell.clientHeight || 78;
+    var N = 20;
+    var syms = [];
+    for (var k = 0; k < N; k++) syms.push(TN_POOL[(k * 5 + seed * 3 + 1) % TN_POOL.length]);
+    syms[N - 1] = syms[0];                       // つなぎ目を見せない
+    cell.style.setProperty("--tnh", H + "px");
+    cell.innerHTML = '<div class="tn-strip">' + syms.map(function (sy) {
+      return "<div>" + (TN_IMG[sy] ? '<img src="' + TN_IMG[sy] + '" alt="">' : "") + "</div>";
+    }).join("") + "</div>";
+    var el = cell.querySelector(".tn-strip");
+    var divs = el.children;
+    var P = (N - 1) * H;                          // 1周ぶんの送り量
+    var r = {
+      cell: cell, el: el, H: H, N: N, P: P,
+      pos: 0, base: H * 9 / 1000,                 // 1秒あたり約9コマ
+      raf: 0, stopped: false,
+    };
+    var put = function (i, sym) {
+      divs[i].innerHTML = TN_IMG[sym] ? '<img src="' + TN_IMG[sym] + '" alt="">' : "";
+    };
+    r.draw = function () { el.style.transform = "translateY(" + ((r.pos % P) - P) + "px)"; };
+    /** 止める絵柄と、その直前に見せる絵柄を仕込む。高速回転中なら読めない */
+    r.setLanding = function (final, teaser) {
+      put(0, final); put(N - 1, final);
+      if (teaser) put(1, teaser);
+    };
+    r.spin = function () {
+      var last = null;
+      var tick = function (now) {
+        if (r.stopped) return;
+        if (last !== null) r.pos += r.base * Math.min(now - last, 34);
+        last = now;
+        r.draw();
+        r.raf = requestAnimationFrame(tick);
+      };
+      r.raf = requestAnimationFrame(tick);
+    };
+    /**
+     * 止める。速度を 100% → 60% → 25% → 8% と落とし、最後は1コマぶんを
+     * 1〜2pxずつ送る。滑らかなイージングは使わない(実機はもっとカクカクしている)。
+     *
+     * @param opt.quick ディーラーと未選択リール用の短い止め方。焦らさない
+     * @param opt.extra 最終段を延ばす量(ms)。3つ揃いが見えているときに長くする
+     */
+    r.stop = function (opt, onStage, done) {
+      opt = opt || {};
+      cancelAnimationFrame(r.raf);
+      var plan = opt.quick
+        ? [{ v: 1.00, ms: 200 }, { v: 0.55, ms: 130 }, { v: 0.22, ms: 110 }, { v: 0.08, ms: 80 }]
+        : [{ v: 1.00, ms: 520 }, { v: 0.60, ms: 500 },
+           { v: 0.25, ms: 660 }, { v: 0.08, ms: 480 + Math.max(0, opt.extra || 0) }];
+      var rest = 0;
+      for (var i = 1; i < 4; i++) rest += r.base * plan[i].v * plan[i].ms;
+      // 先頭が枠に収まる位置(=1周の倍数)へちょうど着地させる。
+      // 足りないぶんは**最初の高速区間の長さ**で吸収する。速すぎて誰も気づかない
+      var target = Math.ceil((r.pos + rest + r.base * plan[0].ms) / r.P) * r.P;
+      while (target - r.pos - rest < r.base * 200) target += r.P;
+      plan[0].ms = (target - r.pos - rest) / r.base;
+
+      var stage = 0, t0 = null, last = null, moved = 0, planEnd = 0;
+      var stageEnds = [];
+      var acc = 0;
+      for (var j = 0; j < 4; j++) { acc += plan[j].ms; stageEnds.push(acc); }
+      planEnd = acc;
+      var start = r.pos;
+      var tick = function (now) {
+        if (t0 === null) { t0 = now; last = now; r.raf = requestAnimationFrame(tick); return; }
+        var t = now - t0;
+        var dt = Math.min(now - last, 34); last = now;
+        while (stage < 3 && t > stageEnds[stage]) {
+          stage++;
+          if (onStage) onStage(stage);
+        }
+        r.pos += r.base * plan[stage].v * dt;
+        moved = r.pos - start;
+        if (t >= planEnd || r.pos >= target) {
+          r.pos = target;
+          r.stopped = true;
+          r.draw();
+          if (done) done();
+          return;
+        }
+        // 行き過ぎないよう、残りが最終段で送れる量を超えないように抑える
+        if (r.pos > target) r.pos = target;
+        r.draw();
+        r.raf = requestAnimationFrame(tick);
+      };
+      r.raf = requestAnimationFrame(tick);
+    };
+    r.kill = function () { r.stopped = true; cancelAnimationFrame(r.raf); };
+    r.draw();
+    return r;
+  }
+
+  /** ディーラーより弱い絵柄／強い絵柄を1つ選ぶ(焦らしに使う) */
+  function tnTeaser(dealer, want) {
+    var dr = TN_RANK[dealer] || 0;
+    var cand = TN_POOL.filter(function (k) {
+      var r = TN_RANK[k];
+      return want === "weak" ? r < dr : r > dr;
+    });
+    if (!cand.length) cand = TN_POOL.filter(function (k) { return k !== dealer; });
+    return cand[Math.floor(Math.random() * cand.length)];
+  }
+
+  /** ダブル開始。まずサーバーにディーラーだけ決めてもらう */
+  function tnDDBegin(half) {
+    if (tnDD || !tnCanDouble) return;
+    var pend = tnPending || 0;
+    tnDD = {
+      stage: "dealing", half: half, pick: -1, reels: [], dealer: null,
+      origin: pend,
+      keep: half ? Math.floor(pend / 2) : 0,          // ハーフで手元に残す額
+      tryLuck: half ? pend - Math.floor(pend / 2) : pend,   // 実際に賭ける額
+      verdict: "", verdictCls: "",
+    };
+    renderTunnel();
+    tnDD.built = true;        // ここから先は盤を作り直さない
+    send({ t: "tunnel.double.deal", half: half });
+  }
+
+  /** サーバーがディーラーを返してきた。ここから実機の手順どおりに進める */
+  function tnDDDealt(dealer) {
+    if (!tnDD) return;
+    tnDD.dealer = dealer;
+    var d = document.getElementById("tn-dd-d");
+    if (!d) return;
+    var reel = tnDDReel(d, 0);
+    tnDD.dealerReel = reel;
+    reel.spin();
+    tnLoopOn(320);
+    // ディーラーは焦らさない。約1.1秒で止める
+    setTimeout(function () {
+      if (!tnDD) return;
+      reel.setLanding(dealer, null);
+      reel.stop({ quick: true }, null, function () {
+        tnLoopOff();
+        tnSfxStop(0.7, 0.86);            // 少し低く「コッ」。強敵感は音程で出す
+        // 倒すべき相手を理解する時間。ここを詰めると3択が作業になる
+        setTimeout(tnDDSpinPlayers, 340);
+      });
+    }, 420);
+  }
+
+  /** プレイヤー3本を回し始め、少し遅れて選択を受け付ける */
+  function tnDDSpinPlayers() {
+    if (!tnDD) return;
+    tnDD.reels = [0, 1, 2].map(function (i) {
+      var el = document.getElementById("tn-dd-p" + i);
+      if (!el) return null;
+      var r = tnDDReel(el, i + 1);
+      // 完全に同時だと機械的すぎる。2〜4フレームだけずらす
+      setTimeout(function () { r.spin(); }, i * 35);
+      return r;
+    });
+    tnLoopOn(320);
+    setTimeout(function () {
+      if (!tnDD) return;
+      tnDD.stage = "picking";
+      var row = document.getElementById("tn-dd-row");
+      if (row) row.classList.add("live");
+      try { bacBlip(1200, 0.04, "square", 0.05); } catch (e) {}
+    }, 200);
+  }
+
+  /** 1本選ばれた。勝敗はサーバーが返してから見せる */
+  function tnDDChoose(idx) {
+    if (!tnDD || tnDD.stage !== "picking") return;
+    tnDD.stage = "resolving";
+    tnDD.pick = idx;
+    var row = document.getElementById("tn-dd-row");
+    if (row) row.classList.remove("live");
+    for (var i = 0; i < 3; i++) {
+      var el = document.getElementById("tn-dd-p" + i);
+      if (!el) continue;
+      el.classList.add(i === idx ? "dd-sel" : "dd-dim");
+      if (i === idx) el.classList.add("dd-flash");
+    }
+    try { bacAudioInit(); bacBlip(1650, 0.05, "square", 0.09); } catch (e) {}
+    send({ t: "tunnel.double.pick", pick: idx });
+  }
+
+  /** サーバーの結果が届いた。ここから停止の順番どおりに見せる */
+  function tnDDReveal(view) {
+    if (!tnDD) { tnDDFinish(view); return; }
+    var r = view.result;
+    var idx = tnDD.pick >= 0 ? tnDD.pick : (r.pick || 0);
+    tnDD.result = view;
+    // 選んだリールから遠い順に止める。視線が外側から中央の1本へ集まる
+    var others = [0, 1, 2].filter(function (i) { return i !== idx; })
+      .sort(function (a, b) { return Math.abs(b - idx) - Math.abs(a - idx); });
+
+    var stopOther = function (k) {
+      var i = others[k];
+      var reel = tnDD.reels[i];
+      if (!reel) return;
+      reel.setLanding(r.player[i], null);
+      reel.stop({ quick: true }, null, function () { tnSfxStop(0.45, 1.0); });
+    };
+    setTimeout(function () { stopOther(0); }, 150);
+    setTimeout(function () { stopOther(1); }, 400);
+
+    // 未選択2本が同じ絵柄なら、3つ揃いの期待があるぶん長く焦らす
+    var same = r.player[others[0]] === r.player[others[1]];
+    var extra = same ? 450 : 0;
+
+    setTimeout(function () {
+      if (!tnDD) return;
+      var reel = tnDD.reels[idx];
+      if (!reel) { tnDDShowVerdict(view); return; }
+      // 直前に見せる絵柄で焦らす。
+      //   勝ち … 一度負け図柄を見せてから滑り込む
+      //   負け … 勝ち図柄をいったん見せてから通り過ぎる
+      var teaser = r.result === "win" ? tnTeaser(r.dealer, "weak")
+        : r.result === "lose" ? tnTeaser(r.dealer, "strong") : null;
+      reel.setLanding(r.player[idx], teaser);
+      tnLoopOn(320);
+      reel.stop({ extra: extra }, function (stage) {
+        // 減速が耳でも分かるように、回転音の間隔を広げていく
+        tnLoopOn([320, 320, 460, 700, 980][stage] || 980);
+      }, function () {
+        tnLoopOff();
+        if (r.result === "win") {
+          tnSfxStop(1, 1.12);
+          try { bacBlip(1180, 0.1, "square", 0.13); setTimeout(function () { bacBlip(1570, 0.2, "square", 0.12); }, 110); } catch (e) {}
+        } else if (r.result === "tie") {
+          tnSfxStop(0.8, 1.0);
+        } else {
+          tnSfxStop(0.8, 0.82);
+        }
+        setTimeout(function () { tnDDShowVerdict(view); }, 180);
+      });
+    }, 620);
+  }
+
+  function tnDDShowVerdict(view) {
+    if (!tnDD) { tnDDFinish(view); return; }
+    var r = view.result;
+    tnDD.verdict = r.result === "win" ? "WINNER!" : r.result === "tie" ? "TIE \u2014 REPLAY" : "LOSE";
+    tnDD.verdictCls = r.result;
+    tnDDPaint();
+    // ジョーカーが出ていればトンネルへ。文字より先に上を見せる
+    var wait = r.tunnel ? 900 : 700;
+    setTimeout(function () { tnDDFinish(view); }, wait);
+  }
+
+  /** 盤を作り直さずに、判定の文字だけ書き換える(リールを消さないため) */
+  function tnDDPaint() {
+    var v = document.querySelector(".tn-ddverdict");
+    if (!v || !tnDD) return;
+    v.className = "tn-ddverdict px " + (tnDD.verdictCls || "");
+    v.textContent = tnDD.verdict || "";
+  }
+
+  /** ダブルを終えて通常画面へ戻す */
+  function tnDDFinish(view) {
+    if (tnDD) {
+      (tnDD.reels || []).forEach(function (r) { if (r) r.kill(); });
+      if (tnDD.dealerReel) tnDD.dealerReel.kill();
+    }
+    tnDD = null;
+    tnLoopOff();
+    // 盤を戻したあとの見出し・WINNER!・残額はこれまでどおりの表示を使う
+    if (view) { tnShowDouble(view); return; }
+    tnBusy = false;
+    renderTunnel();
   }
 
   /** サーバーから返ってきた1スピンを画面に流す */
