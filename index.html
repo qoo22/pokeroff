@@ -3699,7 +3699,8 @@ var PokerOffline = (() => {
   function bszDealDouble(rnd2 = Math.random) {
     const dealer = pickSym(rnd2);
     const player = [pickSym(rnd2), pickSym(rnd2), pickSym(rnd2)];
-    const tunnel = player.includes("joker") ? bszPickTunnel(rnd2) : 0;
+    const hasJoker = dealer === "joker" || player.includes("joker");
+    const tunnel = hasJoker ? bszPickTunnel(rnd2) : 0;
     return { dealer, player, tunnel };
   }
   function bszResolveDouble(deal, stakeX, keepX, pick2 = 0) {
@@ -3710,11 +3711,11 @@ var PokerOffline = (() => {
     let specialKey = null;
     if (player[0] === player[1] && player[1] === player[2]) specialKey = player[0];
     else if (player.every((s) => s === "red7" || s === "blue7")) specialKey = "any7";
-    let specialX = specialKey && BSZ_SPECIAL[specialKey] ? stakeX * BSZ_SPECIAL[specialKey] : 0;
-    const tunnel = deal.tunnel;
-    if (tunnel) specialX *= tunnel;
+    const specialX = specialKey && BSZ_SPECIAL[specialKey] ? stakeX * BSZ_SPECIAL[specialKey] : 0;
     const won = result === "win" ? stakeX * 2 : result === "tie" ? stakeX : 0;
-    const payX = Math.min(keepX + won + specialX, BSZ_MAX_WIN_X);
+    const tunnel = deal.tunnel;
+    const base = keepX + won + specialX;
+    const payX = Math.min(tunnel > 0 ? base * tunnel : base, BSZ_MAX_WIN_X);
     return {
       dealer,
       player,
@@ -18924,8 +18925,12 @@ window.__offlineSave = PokerOffline.startOfflineServer();
   function tnAutoTick() {
     if (!tnAutoRunning()) { tnAutoStop(); return; }
     if (tnBusy || tnDD) return;                       // 演出中・ダブル中は触らない
+    // 台を離れたら止める(第189弾で判定を直した)。
+    // 台の切り替えは class="hidden" で行っているのに、style.display を見ていた。
+    // style.display は常に空なので**この判定は一度も成立せず**、
+    // 別の台へ移ってもオートが裏で回り続けていた
     var el = document.getElementById("tunnel");
-    if (!el || el.style.display === "none") { tnAutoStop(); return; }   // 台を離れた
+    if (!el || el.classList.contains("hidden")) { tnAutoStop(); return; }
     if (tnCanDouble) {                                // 当たりを確定して次へ
       tnBusy = true;
       send({ t: "tunnel.collect" });
@@ -18933,7 +18938,14 @@ window.__offlineSave = PokerOffline.startOfflineServer();
     }
     if (tnCredits < tnBet) { tnAutoStop("\u30C1\u30C3\u30D7\u304C\u8DB3\u308A\u307E\u305B\u3093"); return; }
     if (tnAuto > 0) tnAuto--;
+    var before = tnBusy;
     tnDoSpin();
+    if (!tnBusy && !before) {
+      // 回せなかった(残高不足などで弾かれた)。数えた1回を戻して止める
+      if (tnAuto >= 0) tnAuto++;
+      tnAutoStop("\u56DE\u305B\u307E\u305B\u3093\u3067\u3057\u305F");
+      return;
+    }
     if (tnAuto === 0) tnAutoStop();                   // 最後の1回を回し切ってから止める
   }
 
@@ -19236,6 +19248,25 @@ window.__offlineSave = PokerOffline.startOfflineServer();
     var r = view.result;
     tnDD.verdict = r.result === "win" ? "WINNER!" : r.result === "tie" ? "TIE \u2014 REPLAY" : "LOSE";
     tnDD.verdictCls = r.result;
+    // 何が付いたのかを必ず出す(第189弾)。
+    // 3つ揃いのボーナスもトンネル倍率も金額には入っているのに画面に出ておらず、
+    // 「加算されていない」ように見えていた
+    var extra = [];
+    if (r.specialX > 0) {
+      var mult = tnDD.tryLuck > 0 ? Math.round(r.specialX / tnDD.tryLuck) : 0;
+      extra.push("SPECIAL BONUS" + (mult > 0 ? " \u00D7" + mult : ""));
+      tnDD.verdictCls = "win";          // 負けてもボーナスが付けば当たり扱いで見せる
+    }
+    if (r.tunnel > 0) extra.push("TUNNEL \u00D7" + r.tunnel);
+    if (extra.length) tnDD.verdict += "  " + extra.join("  ");
+    // 揃った絵柄を覚えて、左の表の該当行を反転させる(どれが付いたか一目で分かる)
+    if (r.specialX > 0 && r.player) {
+      tnDD.specKey = (r.player[0] === r.player[1] && r.player[1] === r.player[2])
+        ? r.player[0]
+        : (r.player.every(function (x) { return x === "red7" || x === "blue7"; }) ? "any7" : null);
+      var spec = document.querySelector(".tn-ddspec");
+      if (spec) spec.innerHTML = tnDDSpecHtml();
+    }
     tnDDPaint();
     // 勝ち負けの音。高額まで伸びていれば GOLD RUSH の大当たり音に切り替わる
     try {
