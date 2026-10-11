@@ -1412,6 +1412,45 @@
     border:1px solid rgba(217,180,95,.6);background:rgba(217,180,95,.14);color:#ffe9a8}
   .tn-autoask .cancel{width:100%;margin-top:10px;background:rgba(0,0,0,.3);
     border-color:rgba(255,255,255,.25);color:#cfd8e3;font-weight:600}
+  /* GOLD RUSH のダブルダウン(第190弾)。
+     トンネルと同じ逆三角形の構図。絵柄と配当だけ GOLD RUSH のものを使う。
+     盤は通常のリールの上に重ねる(別画面にすると戻ってきた感じが切れる) */
+  .gr-dd{position:absolute;inset:0;z-index:40;display:flex;flex-direction:column;gap:6px;
+    padding:10px;border-radius:10px;background:rgba(3,6,16,.96);
+    border:2px solid rgba(255,190,90,.6)}
+  .gr-dd .lbl{text-align:center;font-size:10px;letter-spacing:.24em;color:#ffd23f}
+  .gr-dd .head{display:grid;grid-template-columns:auto 1fr auto;gap:1px 8px;
+    font-size:9px;letter-spacing:.08em;color:#5fe3ff;line-height:1.6}
+  .gr-dd .head .n{text-align:right;color:#fff}
+  .gr-dd .mid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;align-items:center}
+  .gr-dd .rule{font-size:8px;line-height:1.6;color:#ffd23f}
+  .gr-dd .spec{font-size:7.5px;line-height:1.5;color:#5fe3ff}
+  .gr-dd .spec div{display:flex;justify-content:space-between;gap:4px}
+  .gr-dd .spec div.on{background:#7a1020;color:#fff}
+  .gr-dd .row{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+  .gr-cell{position:relative;aspect-ratio:150/78;border-radius:6px;background:#06101f;
+    border:1px solid rgba(255,255,255,.12);overflow:hidden;
+    display:flex;align-items:center;justify-content:center}
+  .gr-cell img{width:82%;height:86%;object-fit:contain;display:block}
+  .gr-cell.dealer{border-color:rgba(255,120,120,.8)}
+  .gr-dd .row.live .gr-cell{cursor:pointer;animation:grWait 1s ease-in-out infinite}
+  @keyframes grWait{0%,100%{box-shadow:inset 0 0 0 1px rgba(150,200,255,.25)}
+    50%{box-shadow:inset 0 0 0 1px rgba(150,200,255,.75)}}
+  .gr-cell.sel{animation:none;box-shadow:inset 0 0 0 3px #ffd76a,0 0 18px rgba(255,215,106,.8);z-index:2}
+  .gr-cell.dim{animation:none;filter:brightness(.7)}
+  .gr-strip{position:absolute;left:0;right:0;top:0;will-change:transform}
+  .gr-strip div{height:var(--grh,78px);display:flex;align-items:center;justify-content:center}
+  .gr-strip img{width:82%;height:86%;object-fit:contain}
+  .gr-dd .verdict{text-align:center;font-size:13px;font-weight:900;letter-spacing:.18em;min-height:17px}
+  .gr-dd .verdict.win{color:#ffe07a;text-shadow:0 0 10px rgba(255,200,60,.8)}
+  .gr-dd .verdict.tie{color:#cfe0ee}
+  .gr-dd .verdict.lose{color:#8fa2b5}
+  .gr-dd .btns{display:flex;gap:6px;margin-top:auto}
+  .gr-dd .btns button{flex:1;padding:11px;border-radius:9px;font-size:12.5px;font-weight:800;
+    cursor:pointer;border:1px solid rgba(255,255,255,.3);background:rgba(0,0,0,.35);color:#e8edf2}
+  .gr-dd .btns button.go{background:linear-gradient(180deg,#ffe9a8,#d9a53d);color:#241503;border:none}
+  .gr-dd .btns button:disabled{opacity:.4;cursor:default}
+
   /* ダブルダウン(第168弾)。
      下に別の盤を作らず、**通常のリール画面と同じ場所を入れ替える**。
      リールは通常時と同じ横長のコマを使うので、正方形に押し込んで余る問題も消える。
@@ -3693,8 +3732,8 @@ var PokerOffline = (() => {
       canDouble: capped > 0 && capped <= BSZ_DOUBLE_CAP_X
     };
   }
-  function bszDouble(stakeX, keepX, rnd2 = Math.random, pick2 = 0) {
-    return bszResolveDouble(bszDealDouble(rnd2), stakeX, keepX, pick2);
+  function bszDouble(stakeX, keepX, rnd2 = Math.random, pick3 = 0) {
+    return bszResolveDouble(bszDealDouble(rnd2), stakeX, keepX, pick3);
   }
   function bszDealDouble(rnd2 = Math.random) {
     const dealer = pickSym(rnd2);
@@ -3703,9 +3742,9 @@ var PokerOffline = (() => {
     const tunnel = hasJoker ? bszPickTunnel(rnd2) : 0;
     return { dealer, player, tunnel };
   }
-  function bszResolveDouble(deal, stakeX, keepX, pick2 = 0) {
+  function bszResolveDouble(deal, stakeX, keepX, pick3 = 0) {
     const { dealer, player } = deal;
-    const idx = pick2 === 1 || pick2 === 2 ? pick2 : 0;
+    const idx = pick3 === 1 || pick3 === 2 ? pick3 : 0;
     const mine = player[idx];
     const result = BSZ_RANK[mine] > BSZ_RANK[dealer] ? "win" : BSZ_RANK[mine] === BSZ_RANK[dealer] ? "tie" : "lose";
     let specialKey = null;
@@ -4743,13 +4782,8 @@ var PokerOffline = (() => {
       this.store.setProgress(userId, "slot:chipspins", used + 1, day);
       const outcome = spin(rnd2, { ante: opts.ante, mode: opts.mode });
       const won = Math.round(outcome.totalPayX * bet);
-      if (won > 0) {
-        let rest = won;
-        while (rest > 0) {
-          const part = Math.min(rest, SAFE_POST);
-          this.store.post(userId, "chips", part, "slot_win", `day:${day}`);
-          rest -= part;
-        }
+      if (won > 0 && !opts.hold) {
+        this.payChips(userId, won, "slot_win", `day:${day}`);
       }
       const x = outcome.totalPayX;
       const kind = outcome.maxWin ? "max" : x >= 100 ? "mega" : x >= 20 ? "big" : x > 0 ? "small" : "none";
@@ -4765,6 +4799,18 @@ var PokerOffline = (() => {
         goldLeft: 0,
         spinsLeft: SLOT_LIMIT_ENABLED ? Math.max(0, SLOT_CHIP_DAILY_SPINS - used - 1) : Number.MAX_SAFE_INTEGER
       };
+    }
+    /**
+     * チップを払う。台帳の1回上限を超える額は分割して記帳する(第190弾で切り出し)。
+     * 分割しないと、大きな当たりのときに例外で支払いそのものが落ちる
+     */
+    payChips(userId, amount, reason, ref) {
+      let rest = Math.max(0, Math.round(amount));
+      while (rest > 0) {
+        const part = Math.min(rest, SAFE_POST);
+        this.store.post(userId, "chips", part, reason, ref);
+        rest -= part;
+      }
     }
     /**
      * 2台目「WINNING TUNNEL」を1回まわす(第161弾)。
@@ -5042,6 +5088,94 @@ var PokerOffline = (() => {
       return this.season().finalWeek ? 1.25 : 1;
     }
   };
+
+  // src/server/slotdouble.ts
+  init_define_FLOP_BLUEPRINT();
+  init_define_TUNED_PARAMS();
+  init_define_process_env();
+  var GR_SYMS = ["chip", "club", "diamond", "heart", "spade", "crown", "seven", "wild"];
+  var GR_RANK = {
+    chip: 1,
+    club: 2,
+    diamond: 3,
+    heart: 4,
+    spade: 5,
+    crown: 6,
+    seven: 7,
+    wild: 8
+  };
+  var GR_WEIGHTS = {
+    chip: 150,
+    club: 145,
+    diamond: 140,
+    heart: 135,
+    spade: 130,
+    crown: 120,
+    seven: 110,
+    wild: 8
+  };
+  var GR_SPECIAL = {
+    wild: 75,
+    seven: 7.5,
+    crown: 4,
+    spade: 2,
+    heart: 1.2,
+    diamond: 0.8,
+    club: 0.5,
+    chip: 0.3
+  };
+  var GR_TUNNEL = [
+    { x: 1, w: 46 },
+    { x: 2, w: 32 },
+    { x: 3, w: 16 },
+    { x: 5, w: 6 }
+  ];
+  var GR_DOUBLE_CAP = 5e3;
+  var pick = (rnd2) => {
+    const total = GR_SYMS.reduce((a, k) => a + GR_WEIGHTS[k], 0);
+    let r = rnd2() * total;
+    for (const k of GR_SYMS) {
+      r -= GR_WEIGHTS[k];
+      if (r < 0) return k;
+    }
+    return "chip";
+  };
+  var pickMult = (rnd2) => {
+    const total = GR_TUNNEL.reduce((a, t) => a + t.w, 0);
+    let r = rnd2() * total;
+    for (const t of GR_TUNNEL) {
+      r -= t.w;
+      if (r < 0) return t.x;
+    }
+    return 1;
+  };
+  function grDeal(rnd2 = Math.random) {
+    const dealer = pick(rnd2);
+    const player = [pick(rnd2), pick(rnd2), pick(rnd2)];
+    const hasWild = dealer === "wild" || player.includes("wild");
+    return { dealer, player, mult: hasWild ? pickMult(rnd2) : 0 };
+  }
+  function grResolve(deal, stakeX, keepX, choice = 0) {
+    const { dealer, player } = deal;
+    const idx = choice === 1 || choice === 2 ? choice : 0;
+    const mine = player[idx];
+    const result = GR_RANK[mine] > GR_RANK[dealer] ? "win" : GR_RANK[mine] === GR_RANK[dealer] ? "tie" : "lose";
+    const same = player[0] === player[1] && player[1] === player[2];
+    const specialX = same && GR_SPECIAL[player[0]] ? stakeX * GR_SPECIAL[player[0]] : 0;
+    const won = result === "win" ? stakeX * 2 : result === "tie" ? stakeX : 0;
+    const base = keepX + won + specialX;
+    const payX = deal.mult > 0 ? base * deal.mult : base;
+    return {
+      dealer,
+      player,
+      pick: idx,
+      result,
+      specialX,
+      tunnel: deal.mult,
+      payX,
+      canDouble: payX > 0 && payX <= GR_DOUBLE_CAP
+    };
+  }
 
   // src/server/room.ts
   init_define_FLOP_BLUEPRINT();
@@ -8456,15 +8590,23 @@ var PokerOffline = (() => {
       case "tunnel.double": {
         const half = m.half === true;
         const raw2 = m.pick;
-        const pick2 = typeof raw2 === "number" && (raw2 === 0 || raw2 === 1 || raw2 === 2) ? raw2 : 0;
-        return { ok: true, msg: { t: "tunnel.double", half, pick: pick2 } };
+        const pick3 = typeof raw2 === "number" && (raw2 === 0 || raw2 === 1 || raw2 === 2) ? raw2 : 0;
+        return { ok: true, msg: { t: "tunnel.double", half, pick: pick3 } };
       }
+      case "slot.double.deal":
+        return { ok: true, msg: { t: "slot.double.deal", half: m.half === true } };
+      case "slot.double.pick": {
+        const raw2 = m.pick;
+        return { ok: true, msg: { t: "slot.double.pick", pick: raw2 === 1 || raw2 === 2 ? raw2 : 0 } };
+      }
+      case "slot.collect":
+        return { ok: true, msg: { t: "slot.collect" } };
       case "tunnel.double.deal":
         return { ok: true, msg: { t: "tunnel.double.deal", half: m.half === true } };
       case "tunnel.double.pick": {
         const raw2 = m.pick;
-        const pick2 = raw2 === 1 || raw2 === 2 ? raw2 : 0;
-        return { ok: true, msg: { t: "tunnel.double.pick", pick: pick2 } };
+        const pick3 = raw2 === 1 || raw2 === 2 ? raw2 : 0;
+        return { ok: true, msg: { t: "tunnel.double.pick", pick: pick3 } };
       }
       case "tunnel.collect":
         return { ok: true, msg: { t: "tunnel.collect" } };
@@ -9015,6 +9157,15 @@ var PokerOffline = (() => {
        * **クライアントに持たせるとダブルの元手を改竄できる**ので、
        * 賭け金と現在額はサーバーだけが握る。切断すれば自動で確定して払う
        */
+      /**
+       * GOLD RUSH のダブル用の保留(第190弾)。
+       *
+       * トンネルと同じ作りにしてある。勝ち金は入金せずここへ置き、
+       * 「確定」を押すまで台帳に入れない。入れてからダブルで取り上げると、
+       * 台帳に入金と出金が往復して読みにくくなる
+       */
+      __publicField(this, "slotHold", /* @__PURE__ */ new Map());
+      __publicField(this, "slotDeal", /* @__PURE__ */ new Map());
       __publicField(this, "tunnelHold", /* @__PURE__ */ new Map());
       /**
        * 配り終わったが、まだ選ばれていないダブル(第168弾)。
@@ -9370,6 +9521,18 @@ var PokerOffline = (() => {
      * 持ち越している獲得を確定して払う。払った額を返す(無ければ0)。
      * ダブルの途中で切断されても、次の接続や次のスピンで必ずここを通る
      */
+    /** GOLD RUSH の保留を払い出す。何も無ければ0 */
+    slotCashOut(userId) {
+      this.slotDeal.delete(userId);
+      const hold = this.slotHold.get(userId);
+      if (!hold) return 0;
+      this.slotHold.delete(userId);
+      if (hold.won > 0) {
+        this.economy.payChips(userId, hold.won, "slot_win", "double");
+        this.sendBalance(userId);
+      }
+      return hold.won;
+    }
     tunnelCashOut(userId) {
       this.tunnelDeal.delete(userId);
       const hold = this.tunnelHold.get(userId);
@@ -9823,8 +9986,15 @@ var PokerOffline = (() => {
           return;
         }
         case "slot.spin": {
-          const r = this.economy.spinSlot(s.userId, msg.bet, Math.random, { ante: msg.ante, mode: msg.mode });
+          this.slotCashOut(s.userId);
+          const r = this.economy.spinSlot(s.userId, msg.bet, Math.random, {
+            ante: msg.ante,
+            mode: msg.mode,
+            hold: true
+          });
           if (!r.ok) return this.err(sessionId, "ILLEGAL_ACTION", r.error ?? "\u56DE\u305B\u307E\u305B\u3093\u3067\u3057\u305F");
+          const won = r.won ?? 0;
+          if (won > 0) this.slotHold.set(s.userId, { bet: r.bet, won });
           this.sendBalance(s.userId);
           this.transport.send(sessionId, {
             t: "slot.result",
@@ -9837,9 +10007,46 @@ var PokerOffline = (() => {
               multiplier: r.multiplier,
               kind: r.kind,
               goldLeft: r.goldLeft,
-              spinsLeft: r.spinsLeft
+              spinsLeft: r.spinsLeft,
+              pending: won,
+              canDouble: won > 0 && r.outcome.totalPayX <= GR_DOUBLE_CAP
             }
           });
+          return;
+        }
+        case "slot.double.deal": {
+          const hold = this.slotHold.get(s.userId);
+          if (!hold) return this.err(sessionId, "ILLEGAL_ACTION", "\u30C0\u30D6\u30EB\u3067\u304D\u308B\u7372\u5F97\u304C\u3042\u308A\u307E\u305B\u3093");
+          const keep = msg.half ? Math.floor(hold.won / 2) : 0;
+          const stake = hold.won - keep;
+          const deal = grDeal(Math.random);
+          this.slotDeal.set(s.userId, { deal, stakeX: stake, keepX: keep });
+          this.transport.send(sessionId, {
+            t: "slot.double.dealt",
+            dealer: deal.dealer,
+            stakeX: stake,
+            keepX: keep
+          });
+          return;
+        }
+        case "slot.double.pick": {
+          const hold = this.slotHold.get(s.userId);
+          const pending = this.slotDeal.get(s.userId);
+          if (!hold || !pending) return this.err(sessionId, "ILLEGAL_ACTION", "\u9078\u3079\u308B\u30C0\u30D6\u30EB\u304C\u3042\u308A\u307E\u305B\u3093");
+          this.slotDeal.delete(s.userId);
+          const r = grResolve(pending.deal, pending.stakeX, pending.keepX, msg.pick ?? 0);
+          const nextWon = Math.round(r.payX);
+          if (nextWon > 0) this.slotHold.set(s.userId, { bet: hold.bet, won: nextWon });
+          else this.slotHold.delete(s.userId);
+          this.transport.send(sessionId, {
+            t: "slot.double",
+            result: { result: r, pending: nextWon, canDouble: nextWon > 0 }
+          });
+          return;
+        }
+        case "slot.collect": {
+          const won = this.slotCashOut(s.userId);
+          this.transport.send(sessionId, { t: "slot.collected", won });
           return;
         }
         case "mission.claim": {
@@ -10815,15 +11022,15 @@ var PokerOffline = (() => {
     freqs = freqs.map((f) => f < 0.035 ? 0 : f);
     const total2 = freqs.reduce((a, b) => a + b, 0);
     if (total2 <= 0) return null;
-    let x = r() * total2, pick2 = 0;
+    let x = r() * total2, pick3 = 0;
     for (let a = 0; a < A; a++) {
       x -= freqs[a];
       if (x <= 0) {
-        pick2 = a;
+        pick3 = a;
         break;
       }
     }
-    const lb = node.labels[pick2];
+    const lb = node.labels[pick3];
     if (lb === "check") return { action: "check" };
     if (lb === "fold") return { action: "fold" };
     if (lb === "call") return { action: "call" };
@@ -11035,15 +11242,15 @@ var PokerOffline = (() => {
     freqs = freqs.map((f) => f / total).map((f) => f < 0.035 ? 0 : f);
     const total2 = freqs.reduce((a, b) => a + b, 0);
     if (total2 <= 0) return null;
-    let x = r() * total2, pick2 = 0;
+    let x = r() * total2, pick3 = 0;
     for (let a = 0; a < A2; a++) {
       x -= freqs[a];
       if (x <= 0) {
-        pick2 = a;
+        pick3 = a;
         break;
       }
     }
-    const lb = node.labels[pick2];
+    const lb = node.labels[pick3];
     if (lb === "check") return { action: "check" };
     if (lb === "fold") return { action: "fold" };
     if (lb === "call") return { action: "call" };
@@ -11549,15 +11756,15 @@ var PokerOffline = (() => {
     freqs = freqs.map((f) => f / total).map((f) => f < 0.035 ? 0 : f);
     const t2 = freqs.reduce((a, b) => a + b, 0);
     if (t2 <= 0) return null;
-    let x = r() * t2, pick2 = 0;
+    let x = r() * t2, pick3 = 0;
     for (let a = 0; a < A2; a++) {
       x -= freqs[a];
       if (x <= 0) {
-        pick2 = a;
+        pick3 = a;
         break;
       }
     }
-    const lb = node.labels[pick2];
+    const lb = node.labels[pick3];
     if (lb === "check") return { action: "check" };
     if (lb === "fold") return { action: "fold" };
     if (lb === "call") return { action: "call" };
@@ -12039,7 +12246,7 @@ var PokerOffline = (() => {
     return parseCard(s.slice(1) + (SYM[s[0]] ?? "s"));
   }
   var rnd = Math.random;
-  var pick = (a) => a[Math.floor(rnd() * a.length)];
+  var pick2 = (a) => a[Math.floor(rnd() * a.length)];
   function preflopStrength(a, b) {
     const r1 = (a >> 2) + 2, r2 = (b >> 2) + 2;
     const hi = Math.max(r1, r2), lo = Math.min(r1, r2);
@@ -12088,7 +12295,7 @@ var PokerOffline = (() => {
       __publicField(this, "leaving", false);
       /** 卓のステークスに応じた強さ (0=最弱テーブル, 1=最高額テーブル) */
       __publicField(this, "tier", 0);
-      __publicField(this, "name", pick(NAMES) + (rnd() < 0.18 ? String(Math.floor(rnd() * 98) + 1) : ""));
+      __publicField(this, "name", pick2(NAMES) + (rnd() < 0.18 ? String(Math.floor(rnd() * 98) + 1) : ""));
       __publicField(this, "p", {
         tight: 0.25 + rnd() * 0.5,
         aggr: 0.15 + rnd() * 0.65,
@@ -12239,7 +12446,7 @@ var PokerOffline = (() => {
           const w = t2.seatedCount === 0 ? 4 : t2.seatedCount >= 5 ? 2 : 8 + Math.max(0, 4 - t2.seatedCount) * 5;
           for (let i = 0; i < w; i++) weighted.push(t2);
         }
-        const t = pick(weighted);
+        const t = pick2(weighted);
         this.tableId = t.tableId;
         this.tableId2 = t.tableId;
         this.tier = Math.max(0, Math.min(1, (Math.log10(t.bigBlind) - 1.7) / 10.7));
@@ -12378,7 +12585,7 @@ var PokerOffline = (() => {
         if (cheapCall) opts.push(["call", void 0]);
         if (!check) opts.push(["fold", void 0]);
         if (raise && rnd() < 0.35) opts.push([raise.type, raise.min]);
-        const [ma, mto] = opts.length ? pick(opts) : ["fold", void 0];
+        const [ma, mto] = opts.length ? pick2(opts) : ["fold", void 0];
         this.act(st, ma, mto);
         return;
       }
@@ -12695,7 +12902,7 @@ var PokerOffline = (() => {
       if (rnd() < 0.4) target = Math.max(Math.round(20 * SCALE), Math.min(Math.round(38 * SCALE), target + (rnd() < 0.5 ? -1 : 1)));
       const deficit = target - alive.size;
       for (let i = 0; i < Math.min(deficit, 2); i++) setTimeout(spawn, i * 3e3 + rnd() * 4e3);
-      if (deficit < 0 && alive.size > 0) pick([...alive]).leaveSoon();
+      if (deficit < 0 && alive.size > 0) pick2([...alive]).leaveSoon();
     }, 12e3);
   }
 
@@ -14127,6 +14334,17 @@ window.__offlineSave = PokerOffline.startOfflineServer();
       case "tunnel.result":
         tnCredits = balance;
         tnShowResult(msg.result);
+        break;
+      case "slot.double.dealt":
+        grDDDealt(msg.dealer);           // GOLD RUSH のダブル(第190弾)
+        break;
+      case "slot.double":
+        grDDReveal(msg.result);
+        break;
+      case "slot.collected":
+        grPending = 0;
+        slotSpinning = false;
+        try { slotUnlockUI(); } catch (e) { try { renderSlot(); } catch (e2) {} }
         break;
       case "tunnel.double.dealt":
         // ディーラーだけ先に届く。ここから3択が始まる(第168弾)
@@ -18285,6 +18503,346 @@ window.__offlineSave = PokerOffline.startOfflineServer();
     requestAnimationFrame(tick);
   }
 
+  // ---------------------------------------------------------------------
+  // GOLD RUSH のダブルダウン(第190弾)
+  // ---------------------------------------------------------------------
+  //
+  // 遊び方は WINNING TUNNEL とまったく同じ。違うのは絵柄と配当だけ。
+  // 2台で操作が違うと混乱するので、手順・待ち時間・音はすべて揃えてある:
+  //   ディーラーが先に止まる → 間を置く → プレイヤー3本が回る → 1本選ぶ
+  //   → 選ばなかった2本を遠い順に止める → 選んだ1本を4段階で減速
+  //
+  // 勝敗はサーバーが配った時点で決まっている(slotdouble.ts の grDeal)。
+  // ここは見せ方だけで、演出中に抽選し直すことはない。
+
+  /** 強さ。サーバーの GR_RANK と同じ並び */
+  var GR_RANK = { chip: 1, club: 2, diamond: 3, heart: 4, spade: 5, crown: 6, seven: 7, wild: 8 };
+  var GR_POOL = ["chip", "club", "diamond", "heart", "spade", "crown", "seven", "wild"];
+  var GR_NAME = { chip: "\u30C1\u30C3\u30D7", club: "\u30AF\u30E9\u30D6", diamond: "\u30C0\u30A4\u30E4",
+    heart: "\u30CF\u30FC\u30C8", spade: "\u30B9\u30DA\u30FC\u30C9", crown: "\u738B\u51A0",
+    seven: "\u30BB\u30D6\u30F3", wild: "WILD" };
+  /** 3つ揃いのボーナス。サーバーの GR_SPECIAL と同じ値 */
+  var GR_SPECIAL = { wild: 75, seven: 7.5, crown: 4, spade: 2, heart: 1.2, diamond: 0.8, club: 0.5, chip: 0.3 };
+
+  /** 進行中のダブル。null なら通常のスロット画面 */
+  var grDD = null;
+
+  function grImg(k) { return (typeof SLOT_IMG !== "undefined" && SLOT_IMG) ? SLOT_IMG[k] : null; }
+
+  /** 1本ぶんのリール。作りはトンネルの tnDDReel と同じ(上から下へ流れる) */
+  function grReel(cell, seed) {
+    var H = cell.clientHeight || 78;
+    var N = 20;
+    var syms = [];
+    for (var k = 0; k < N; k++) syms.push(GR_POOL[(k * 5 + seed * 3 + 1) % GR_POOL.length]);
+    syms[N - 1] = syms[0];                       // つなぎ目を見せない
+    cell.style.setProperty("--grh", H + "px");
+    cell.innerHTML = '<div class="gr-strip">' + syms.map(function (sy) {
+      var src = grImg(sy);
+      return "<div>" + (src ? '<img src="' + src + '" alt="">' : "") + "</div>";
+    }).join("") + "</div>";
+    var el = cell.querySelector(".gr-strip");
+    var divs = el.children;
+    var P = (N - 1) * H;
+    var r = { cell: cell, el: el, H: H, N: N, P: P, pos: 0, base: H * 9 / 1000, raf: 0, stopped: false };
+    var put = function (i, sym) {
+      var src = grImg(sym);
+      divs[i].innerHTML = src ? '<img src="' + src + '" alt="">' : "";
+    };
+    r.draw = function () { el.style.transform = "translateY(" + ((r.pos % P) - P) + "px)"; };
+    r.setLanding = function (final, teaser) {
+      put(0, final); put(N - 1, final);
+      if (teaser) put(1, teaser);
+    };
+    r.spin = function () {
+      var last = null;
+      var tick = function (now) {
+        if (r.stopped) return;
+        if (last !== null) r.pos += r.base * Math.min(now - last, 34);
+        last = now;
+        r.draw();
+        r.raf = requestAnimationFrame(tick);
+      };
+      r.raf = requestAnimationFrame(tick);
+    };
+    r.stop = function (opt, done) {
+      opt = opt || {};
+      cancelAnimationFrame(r.raf);
+      var plan = opt.quick
+        ? [{ v: 1.00, ms: 200 }, { v: 0.55, ms: 130 }, { v: 0.22, ms: 110 }, { v: 0.08, ms: 80 }]
+        : [{ v: 1.00, ms: 520 }, { v: 0.60, ms: 500 },
+           { v: 0.25, ms: 660 }, { v: 0.08, ms: 480 + Math.max(0, opt.extra || 0) }];
+      var rest = 0;
+      for (var i = 1; i < 4; i++) rest += r.base * plan[i].v * plan[i].ms;
+      var target = Math.ceil((r.pos + rest + r.base * plan[0].ms) / r.P) * r.P;
+      while (target - r.pos - rest < r.base * 200) target += r.P;
+      plan[0].ms = (target - r.pos - rest) / r.base;
+      var stage = 0, t0 = null, last = null, acc = 0, ends = [];
+      for (var j = 0; j < 4; j++) { acc += plan[j].ms; ends.push(acc); }
+      var planEnd = acc;
+      var tick = function (now) {
+        if (t0 === null) { t0 = now; last = now; r.raf = requestAnimationFrame(tick); return; }
+        var t = now - t0, dt = Math.min(now - last, 34); last = now;
+        while (stage < 3 && t > ends[stage]) stage++;
+        r.pos += r.base * plan[stage].v * dt;
+        if (t >= planEnd || r.pos >= target) {
+          r.pos = target; r.stopped = true; r.draw();
+          if (done) done();
+          return;
+        }
+        r.draw();
+        r.raf = requestAnimationFrame(tick);
+      };
+      r.raf = requestAnimationFrame(tick);
+    };
+    r.kill = function () { r.stopped = true; cancelAnimationFrame(r.raf); };
+    r.draw();
+    return r;
+  }
+
+  /** ディーラーより弱い／強い絵柄を1つ。焦らしに使う */
+  function grTeaser(dealer, want) {
+    var dr = GR_RANK[dealer] || 0;
+    var c = GR_POOL.filter(function (k) {
+      return want === "weak" ? GR_RANK[k] < dr : GR_RANK[k] > dr;
+    });
+    if (!c.length) c = GR_POOL.filter(function (k) { return k !== dealer; });
+    return c[Math.floor(Math.random() * c.length)];
+  }
+
+  /** 盤の組み立て。通常のリールの上に重ねる */
+  function grDDBuild() {
+    var host = document.getElementById("sl-gridwrap") || document.getElementById("slot");
+    if (!host) return null;
+    var old = document.getElementById("gr-dd");
+    if (old) old.remove();
+    var el = document.createElement("div");
+    el.className = "gr-dd";
+    el.id = "gr-dd";
+    var order = ["wild", "seven", "crown", "spade", "heart", "diamond", "club", "chip"];
+    var spec = order.map(function (k) {
+      return '<div data-sk="' + k + '"><span>' + GR_NAME[k] + "</span><b>\u00D7" + GR_SPECIAL[k] + "</b></div>";
+    }).join("");
+    var cell = function (cls, id) {
+      return '<div class="gr-cell ' + (cls || "") + '"' + (id ? ' id="' + id + '"' : "") + "></div>";
+    };
+    el.innerHTML =
+      '<div class="head px">' +
+        "<span>ORIGINAL WIN</span><span class=\"n\" id=\"gr-origin\">0</span><span>CHIPS</span>" +
+        "<span>COLLECTED</span><span class=\"n\" id=\"gr-keep\">0</span><span>CHIPS</span>" +
+        "<span>TRY LUCK</span><span class=\"n\" id=\"gr-try\">0</span><span>CHIPS</span>" +
+      "</div>" +
+      '<div class="lbl px">DEALER</div>' +
+      '<div class="mid">' +
+        '<div class="spec px" id="gr-spec">' + spec + "</div>" +
+        "<div>" + cell("dealer", "gr-d") + "</div>" +
+        '<div class="rule px">If selected reel<br>beats dealer\'s,<br>player wins.<br><br>All ties are<br>replayed.</div>' +
+      "</div>" +
+      '<div class="row" id="gr-row">' + cell("", "gr-p0") + cell("", "gr-p1") + cell("", "gr-p2") + "</div>" +
+      '<div class="lbl px">PLAYER</div>' +
+      '<div class="verdict px" id="gr-verdict"></div>' +
+      '<div class="btns" id="gr-btns"></div>';
+    host.appendChild(el);
+    var row = document.getElementById("gr-row");
+    if (row) row.onclick = function (e) {
+      if (!grDD || grDD.stage !== "picking") return;
+      var c = e.target.closest(".gr-cell");
+      if (!c) return;
+      var i = Array.prototype.indexOf.call(row.children, c);
+      if (i >= 0) grDDChoose(i);
+    };
+    return el;
+  }
+
+  /** 上段の金額と操作盤だけ書き換える(盤は作り直さない) */
+  function grDDPaintHead() {
+    if (!grDD) return;
+    var set = function (id, v) { var e = document.getElementById(id); if (e) e.textContent = fmt(v); };
+    set("gr-origin", grDD.origin || 0);
+    set("gr-keep", grDD.keep || 0);
+    set("gr-try", grDD.tryLuck || 0);
+    var b = document.getElementById("gr-btns");
+    if (!b) return;
+    var dis = grDD.stage !== "again" ? " disabled" : "";
+    b.innerHTML =
+      '<button id="gr-collect"' + dis + ">\u78BA\u5B9A</button>" +
+      '<button id="gr-half"' + dis + ">\u30CF\u30FC\u30D5</button>" +
+      '<button class="go" id="gr-full"' + dis + ">" +
+        (grDD.stage === "again" ? "\u3082\u3046\u4E00\u5EA6\u30C0\u30D6\u30EB" : "\u30C0\u30D6\u30EB") + "</button>";
+    var c = document.getElementById("gr-collect");
+    var h = document.getElementById("gr-half");
+    var f = document.getElementById("gr-full");
+    if (c) c.onclick = function () { if (grDD.stage !== "again") return; grDDClose(); send({ t: "slot.collect" }); };
+    if (h) h.onclick = function () { grDDBegin(true); };
+    if (f) f.onclick = function () { grDDBegin(false); };
+  }
+
+  /** ダブル開始。勝った額がそのまま次の賭け金になる */
+  function grDDBegin(half) {
+    if (grDD && grDD.stage !== "again") return;
+    var pend = grPending || 0;
+    if (!(pend > 0)) return;
+    var keep = half ? Math.floor(pend / 2) : 0;
+    var info = { stage: "dealing", pick: -1, reels: [], origin: pend, keep: keep, tryLuck: pend - keep };
+    if (!grDD) { grDD = info; grDDBuild(); }
+    else {
+      grDD = info;
+      ["gr-d", "gr-p0", "gr-p1", "gr-p2"].forEach(function (id) {
+        var e = document.getElementById(id);
+        if (!e) return;
+        e.className = "gr-cell " + (id === "gr-d" ? "dealer" : "");
+        e.innerHTML = ""; e.style.removeProperty("--grh");
+      });
+      var row = document.getElementById("gr-row");
+      if (row) row.classList.remove("live");
+      var v = document.getElementById("gr-verdict");
+      if (v) { v.className = "verdict px"; v.textContent = ""; }
+    }
+    grDDPaintHead();
+    send({ t: "slot.double.deal", half: half });
+  }
+
+  /** ディーラーが届いた。実機の手順どおり進める */
+  function grDDDealt(dealer) {
+    if (!grDD) return;
+    grDD.dealer = dealer;
+    var d = document.getElementById("gr-d");
+    if (!d) return;
+    var reel = grReel(d, 0);
+    grDD.dealerReel = reel;
+    reel.spin();
+    setTimeout(function () {
+      if (!grDD) return;
+      reel.setLanding(dealer, null);
+      reel.stop({ quick: true }, function () {
+        try { sfx("btn"); } catch (e) {}
+        setTimeout(grDDSpinPlayers, 340);     // 倒すべき相手を理解する間
+      });
+    }, 420);
+  }
+
+  function grDDSpinPlayers() {
+    if (!grDD) return;
+    grDD.reels = [0, 1, 2].map(function (i) {
+      var el = document.getElementById("gr-p" + i);
+      if (!el) return null;
+      var r = grReel(el, i + 1);
+      setTimeout(function () { r.spin(); }, i * 35);
+      return r;
+    });
+    setTimeout(function () {
+      if (!grDD) return;
+      grDD.stage = "picking";
+      var row = document.getElementById("gr-row");
+      if (row) row.classList.add("live");
+    }, 200);
+  }
+
+  function grDDChoose(idx) {
+    if (!grDD || grDD.stage !== "picking") return;
+    grDD.stage = "resolving";
+    grDD.pick = idx;
+    var row = document.getElementById("gr-row");
+    if (row) row.classList.remove("live");
+    for (var i = 0; i < 3; i++) {
+      var el = document.getElementById("gr-p" + i);
+      if (el) el.classList.add(i === idx ? "sel" : "dim");
+    }
+    try { sfx("btn"); } catch (e) {}
+    send({ t: "slot.double.pick", pick: idx });
+  }
+
+  /** サーバーの結果が届いた。停止の順番どおりに見せる */
+  function grDDReveal(view) {
+    if (!grDD) return;
+    var r = view.result;
+    var idx = grDD.pick >= 0 ? grDD.pick : (r.pick || 0);
+    var others = [0, 1, 2].filter(function (i) { return i !== idx; })
+      .sort(function (a, b) { return Math.abs(b - idx) - Math.abs(a - idx); });
+
+    var stopOther = function (k) {
+      var reel = grDD.reels[others[k]];
+      if (!reel) return;
+      reel.setLanding(r.player[others[k]], null);
+      reel.stop({ quick: true }, function () { try { sfx("btn"); } catch (e) {} });
+    };
+    setTimeout(function () { stopOther(0); }, 150);
+    setTimeout(function () { stopOther(1); }, 400);
+
+    // 未選択2本が同じ絵柄なら、3つ揃いの期待があるぶん長く焦らす
+    var same = r.player[others[0]] === r.player[others[1]];
+
+    setTimeout(function () {
+      if (!grDD) return;
+      var reel = grDD.reels[idx];
+      if (!reel) { grDDVerdict(view); return; }
+      // 勝ちは弱い図柄から滑り込み、負けは勝ち図柄を見せてから通り過ぎる
+      var teaser = r.result === "win" ? grTeaser(r.dealer, "weak")
+        : r.result === "lose" ? grTeaser(r.dealer, "strong") : null;
+      reel.setLanding(r.player[idx], teaser);
+      reel.stop({ extra: same ? 450 : 0 }, function () {
+        setTimeout(function () { grDDVerdict(view); }, 180);
+      });
+    }, 620);
+  }
+
+  function grDDVerdict(view) {
+    if (!grDD) return;
+    var r = view.result;
+    var txt = r.result === "win" ? "WINNER!" : r.result === "tie" ? "TIE \u2014 REPLAY" : "LOSE";
+    var cls = r.result;
+    // 何が付いたのかを必ず出す。金額に入っているのに見えないと「加算されていない」ように見える
+    var extra = [];
+    if (r.specialX > 0) {
+      var m = grDD.tryLuck > 0 ? (r.specialX / grDD.tryLuck) : 0;
+      extra.push("SPECIAL BONUS" + (m > 0 ? " \u00D7" + (m >= 1 ? Math.round(m) : m.toFixed(1)) : ""));
+      cls = "win";                       // 負けてもボーナスが付けば当たり扱いで見せる
+      var key = (r.player[0] === r.player[1] && r.player[1] === r.player[2]) ? r.player[0] : null;
+      var hit = key ? document.querySelector('#gr-spec [data-sk="' + key + '"]') : null;
+      if (hit) hit.classList.add("on");
+    }
+    if (r.tunnel > 0) extra.push("WILD \u00D7" + r.tunnel);
+    if (extra.length) txt += "  " + extra.join("  ");
+    var v = document.getElementById("gr-verdict");
+    if (v) { v.className = "verdict px " + cls; v.textContent = txt; }
+    try {
+      if (r.result === "win" || r.specialX > 0) tnSfxWin(r.payX / Math.max(1, grDD.tryLuck || 1), false);
+      else if (r.result === "tie") sfx("btn");
+    } catch (e) {}
+
+    setTimeout(function () {
+      // まだ賭けられるなら画面を閉じない。勝った額が次の賭け金になる
+      if (grDD && view.canDouble) {
+        grPending = view.pending || 0;
+        grDD.stage = "again";
+        grDD.origin = grPending; grDD.keep = 0; grDD.tryLuck = grPending;
+        grDDPaintHead();
+        return;
+      }
+      grPending = view.pending || 0;
+      grDDClose();
+      if (!(view.pending > 0)) {
+        // 負けて全部失った。確定するものが無いので、そのまま通常画面へ
+        try { renderSlot(); } catch (e) {}
+      } else {
+        send({ t: "slot.collect" });     // 上限に届いたので自動で確定
+      }
+    }, r.tunnel ? 900 : 700);
+  }
+
+  function grDDClose() {
+    if (grDD) {
+      (grDD.reels || []).forEach(function (x) { if (x) x.kill(); });
+      if (grDD.dealerReel) grDD.dealerReel.kill();
+    }
+    grDD = null;
+    var el = document.getElementById("gr-dd");
+    if (el) el.remove();
+  }
+
+  /** 保留している獲得(チップ)。確定かダブルを選ぶまで入金されない */
+  var grPending = 0;
+
   /** 手持ちのクレジット。slot.info の残高をそのまま出す */
   var tnCredits = 0;
 
@@ -21571,6 +22129,26 @@ window.__offlineSave = PokerOffline.startOfflineServer();
     // 早く鳴り始めたぶん、ここでの残り待ちは短くなる(テンポは向上する)
     await fanfareWait();
     await sfxWait("smallwin");
+
+    // 当たっていれば、勝ち金は**まだ入金されていない**(第190弾)。
+    // 確定するかダブルに賭けるかを選んでもらう。
+    // 演出が全部終わってから出すので、見せ場を邪魔しない
+    grPending = r.pending || 0;
+    // オート中は**自動で確定**して次へ進む(第190弾)。
+    // ダブルは賭けるかどうかの判断なので勝手にやらない。
+    // ここを入れないと、当たるたびに選択待ちでオートが止まる
+    if (grPending > 0 && slotAutoRunning()) {
+      send({ t: "slot.collect" });
+    } else if (grPending > 0 && r.canDouble) {
+      grDD = { stage: "again", pick: -1, reels: [],
+        origin: grPending, keep: 0, tryLuck: grPending };
+      grDDBuild();
+      grDDPaintHead();
+      return;                                    // 選ぶまで次は回せない
+    } else if (grPending > 0) {
+      // 上限を超えた当たりはダブルに進めない。そのまま確定して払う
+      send({ t: "slot.collect" });
+    }
     slotSpinning = false;
     slotUnlockUI();                              // ボタンとベット操作だけを戻す(全再描画しない)
 
